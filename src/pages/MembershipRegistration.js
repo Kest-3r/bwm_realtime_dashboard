@@ -1,0 +1,70 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import './Pages.css';
+
+const MembershipRegistration = () => {
+    const navigate = useNavigate();
+    const [selectedTier, setSelectedTier] = useState('Individual');
+
+    const tiers = [
+        { name: 'Student (RM 20)', value: 'Student' },
+        { name: 'Individual (RM 50)', value: 'Individual' },
+        { name: 'Corporate', value: 'Corporate' }
+    ];
+
+    return (
+        <div className="page-wrapper-cream">
+            <button className="btn-back-pill" onClick={() => navigate('/')}>
+                <ArrowLeft size={16} /> Back to Dashboard
+            </button>
+
+            <div className="form-card-centered">
+                {/* Header Image for Membership */}
+                <img
+                    src="https://images.unsplash.com/photo-1524813686514-a57563d77965?auto=format&fit=crop&q=80&w=1000"
+                    className="form-hero"
+                    alt="Membership"
+                />
+
+                <h2 className="form-header-text">Become a BWM Member</h2>
+
+                <form className="stacked-form">
+                    <div className="input-row">
+                        <label>Full Name</label>
+                        <input type="text" placeholder="Your Name" required />
+                    </div>
+                    <div className="input-row">
+                        <label>Email Address</label>
+                        <input type="email" placeholder="email@example.com" required />
+                    </div>
+                    <div className="input-row">
+                        <label>Phone Number</label>
+                        <input type="text" placeholder="+60..." required />
+                    </div>
+
+                    {/* Tier Selector */}
+                    <div className="input-row tier-selector-container">
+                        <label>Membership Tier</label>
+                        <div className="tier-options">
+                            {tiers.map((tier) => (
+                                <button
+                                    key={tier.value}
+                                    type="button"
+                                    className={`tier-btn ${selectedTier === tier.value ? 'active' : ''}`}
+                                    onClick={() => setSelectedTier(tier.value)}
+                                >
+                                    {tier.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn-form-submit">Confirm Registration</button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default MembershipRegistration;
