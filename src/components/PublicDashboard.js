@@ -25,7 +25,6 @@ const PublicDashboard = ({ campaigns, libraryItems, volunteerEvents, membershipC
                 <h1 className="title">Community Impact Dashboard</h1>
                 <div className="header-actions">
                     <nav className="header-nav">
-                        {/* Linked to VolunteerTimeline.js and LibraryArchive.js */}
                         <span onClick={() => navigate('/volunteer-timeline')}>Volunteer Logs</span>
                         <span onClick={() => navigate('/library-archive')}>Library Acquisitions</span>
                     </nav>
@@ -52,13 +51,16 @@ const PublicDashboard = ({ campaigns, libraryItems, volunteerEvents, membershipC
                                             <div className="progress-wrapper">
                                                 <div className="progress-label">
                                                     <span>{c.name}</span>
-                                                    <span><strong>{c.slotsFilled} / {c.targetGoal}</strong> Seats</span>
+                                                    {/* Updated to match Supabase field names */}
+                                                    <span><strong>{c.slotsfilled || 0} / {c.targetgoal || 0}</strong> Seats</span>
                                                 </div>
                                                 <div className="progress-bg">
-                                                    <div className="progress-fill-orange" style={{ width: `${(c.slotsFilled / c.targetGoal) * 100}%` }}></div>
+                                                    <div 
+                                                        className="progress-fill-orange" 
+                                                        style={{ width: `${(c.slotsfilled / (c.targetgoal || 1)) * 100}%` }}
+                                                    ></div>
                                                 </div>
                                             </div>
-                                            {/* Linked to EventRegistration.js */}
                                             <button className="btn-register" onClick={() => navigate(`/event-registration/${c.id}`)}>
                                                 Register Now
                                             </button>
@@ -81,11 +83,8 @@ const PublicDashboard = ({ campaigns, libraryItems, volunteerEvents, membershipC
 
                 {/* --- Right Column: Gauges and Activity Lists --- */}
                 <div className="right-column">
-
-                    {/* Dual Gauge Section: Membership and Donations */}
                     <section className="card stats-card">
                         <div className="gauge-row-container">
-                            {/* Membership Gauge (Teal) */}
                             <div className="gauge-section">
                                 <HeartHandshake size={24} color="#0f766e" />
                                 <h3 className="gauge-title">Membership</h3>
@@ -94,28 +93,22 @@ const PublicDashboard = ({ campaigns, libraryItems, volunteerEvents, membershipC
                                     <div className="progress-fill-teal" style={{ width: `${(membershipCount / 500) * 100}%` }}></div>
                                 </div>
                             </div>
-
                             <div className="gauge-divider-vertical"></div>
-
-                            {/* Donations Gauge (Gold/Amber) */}
                             <div className="gauge-section">
                                 <Coins size={24} color="#b45309" />
                                 <h3 className="gauge-title">Donations</h3>
                                 <div className="stat-value financial">RM {financialData.current.toLocaleString()}</div>
                                 <div className="mini-progress-bg">
-                                    <div className="progress-fill-gold" style={{ width: `${(financialData.current / financialData.target) * 100}%` }}></div>
+                                    <div className="progress-fill-gold" style={{ width: `${(financialData.current / (financialData.target || 1)) * 100}%` }}></div>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Centered Actions aligned under their respective gauges */}
                         <div className="gauge-footer-actions">
                             <button className="btn-register" onClick={() => navigate('/membership-registration')}>Join Us</button>
                             <button className="btn-donate" onClick={() => navigate('/donate')}>Donate</button>
                         </div>
                     </section>
 
-                    {/* New Library Acquisitions List Card */}
                     <section className="card list-card">
                         <div className="card-sidebar">
                             <Smile size={32} color="#0f766e" />
@@ -132,7 +125,6 @@ const PublicDashboard = ({ campaigns, libraryItems, volunteerEvents, membershipC
                         </div>
                     </section>
 
-                    {/* Volunteer Impact Timeline List Card */}
                     <section className="card list-card">
                         <div className="card-sidebar">
                             <Smile size={32} color="#0f766e" />
