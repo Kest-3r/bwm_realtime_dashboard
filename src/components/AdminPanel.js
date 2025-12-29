@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import {
     X, ClipboardList, BookCheck, DollarSign, Users,
-    HeartHandshake, LogOut, Plus, Edit3, UserPlus
+    LogOut, Plus, UserPlus
 } from 'lucide-react';
 import './Admin.css';
 
@@ -9,12 +10,53 @@ const AdminPanel = ({
                         campaigns, setCampaigns,
                         libraryItems, setLibraryItems,
                         volunteerEvents, setVolunteerEvents,
-                        financialData, setFinancialData,
-                        membershipCount, setMembershipCount
+                        financialData,
+                        membershipCount
                     }) => {
     const [currentView, setCurrentView] = useState('campaigns');
     const [showModal, setShowModal] = useState(false);
     const [newCampaign, setNewCampaign] = useState({ name: '', targetGoal: 0, image: '', status: 'Active' });
+
+    // --- LOCAL STATE FOR INPUTS (Fixes the typing issue) ---
+    const [localMembership, setLocalMembership] = useState(membershipCount || 0);
+    const [localFinancial, setLocalFinancial] = useState(financialData || { current: 0, target: 0 });
+
+    // Sync local state when real-time data comes in from App.js
+    useEffect(() => {
+        if (membershipCount !== undefined) setLocalMembership(membershipCount);
+    }, [membershipCount]);
+
+    useEffect(() => {
+        if (financialData) setLocalFinancial(financialData);
+    }, [financialData]);
+
+    // --- Supabase Update Functions ---
+    const updateFinancials = async (updates) => {
+        // Update local state immediately for responsiveness
+        setLocalFinancial(prev => ({ ...prev, ...updates }));
+
+        const { error } = await supabase
+            .from('site_stats')
+            .update(updates)
+            .eq('id', 1);
+        
+        if (error) console.error("Error updating financial data:", error.message);
+    };
+
+    const updateMembership = async (val) => {
+        // Handle empty input to prevent NaN errors
+        const newValue = val === '' ? 0 : parseInt(val);
+        
+        // Update local state immediately
+        setLocalMembership(val);
+
+        const { error } = await supabase
+            .from('site_stats')
+            .update({ membership_count: newValue })
+            .eq('id', 1);
+
+        if (error) console.error("Error updating membership count:", error.message);
+    };
 
     const handleAddCampaign = (e) => {
         e.preventDefault();
@@ -129,17 +171,25 @@ const AdminPanel = ({
                                 <div className="card-badge finance">Finance</div>
                                 <div className="input-group">
                                     <label>Goal (RM)</label>
-                                    <input type="number" value={financialData.target} onChange={(e) => setFinancialData({...financialData, target: parseInt(e.target.value)})} />
+                                    <input 
+                                        type="number" 
+                                        value={localFinancial.target} 
+                                        onChange={(e) => updateFinancials({ financial_target: parseInt(e.target.value) || 0 })} 
+                                    />
                                 </div>
                                 <div className="input-group">
                                     <label>Current (RM)</label>
-                                    <input type="number" value={financialData.current} onChange={(e) => setFinancialData({...financialData, current: parseInt(e.target.value)})} />
+                                    <input 
+                                        type="number" 
+                                        value={localFinancial.current} 
+                                        onChange={(e) => updateFinancials({ financial_current: parseInt(e.target.value) || 0 })} 
+                                    />
                                 </div>
                                 <div className="progress-preview">
                                     <div className="progress-bar-bg">
-                                        <div className="progress-bar-fill gold" style={{ width: `${(financialData.current / financialData.target) * 100}%` }}></div>
+                                        <div className="progress-bar-fill gold" style={{ width: `${(localFinancial.current / (localFinancial.target || 1)) * 100}%` }}></div>
                                     </div>
-                                    <span>{((financialData.current / financialData.target) * 100).toFixed(1)}% of Goal</span>
+                                    <span>{((localFinancial.current / (localFinancial.target || 1)) * 100).toFixed(1)}% of Goal</span>
                                 </div>
                             </div>
 
@@ -152,13 +202,17 @@ const AdminPanel = ({
                                 </div>
                                 <div className="input-group">
                                     <label>Current Active</label>
-                                    <input type="number" value={membershipCount} onChange={(e) => setMembershipCount(parseInt(e.target.value))} />
+                                    <input 
+                                        type="number" 
+                                        value={localMembership} 
+                                        onChange={(e) => updateMembership(e.target.value)} 
+                                    />
                                 </div>
                                 <div className="progress-preview">
                                     <div className="progress-bar-bg">
-                                        <div className="progress-bar-fill teal" style={{ width: `${(membershipCount / 500) * 100}%` }}></div>
+                                        <div className="progress-bar-fill teal" style={{ width: `${(localMembership / 500) * 100}%` }}></div>
                                     </div>
-                                    <span>{((membershipCount / 500) * 100).toFixed(1)}% of Goal</span>
+                                    <span>{((localMembership / 500) * 100).toFixed(1)}% of Goal</span>
                                 </div>
                             </div>
                         </div>

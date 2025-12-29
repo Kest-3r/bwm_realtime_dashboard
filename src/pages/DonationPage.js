@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, CreditCard, Heart, Landmark, Wallet } from 'lucide-react';
-import './Pages.css'; // Importing from the pages directory
+import { supabase } from '../supabaseClient'; // Import your Supabase client
+import './Pages.css';
 
-const DonationPage = ({ financialData, setFinancialData }) => {
+const DonationPage = ({ financialData }) => {
     const navigate = useNavigate();
     const [amount, setAmount] = useState('');
     const [donorInfo, setDonorInfo] = useState({ name: '', email: '', message: '' });
@@ -11,16 +12,27 @@ const DonationPage = ({ financialData, setFinancialData }) => {
 
     const presets = [10, 50, 100, 500];
 
-    const handleDonate = (e) => {
+    const handleDonate = async (e) => {
         e.preventDefault();
         const donationValue = parseFloat(amount);
+
         if (donationValue > 0) {
-            setFinancialData({
-                ...financialData,
-                current: financialData.current + donationValue
-            });
-            alert(`Thank you for your RM ${donationValue} donation, ${donorInfo.name}!`);
-            navigate('/');
+            // Calculate new total
+            const newTotal = financialData.current + donationValue;
+
+            // Update Supabase instead of calling setFinancialData
+            const { error } = await supabase
+                .from('site_stats')
+                .update({ financial_current: newTotal })
+                .eq('id', 1);
+
+            if (error) {
+                console.error("Donation failed:", error.message);
+                alert("There was an error processing your donation. Please try again.");
+            } else {
+                alert(`Thank you for your RM ${donationValue} donation, ${donorInfo.name}!`);
+                navigate('/');
+            }
         }
     };
 
@@ -44,7 +56,6 @@ const DonationPage = ({ financialData, setFinancialData }) => {
                     </div>
 
                     <form onSubmit={handleDonate}>
-                        {/* Amount Selection */}
                         <div className="form-group">
                             <label className="section-label">Select Amount (RM)</label>
                             <div className="preset-grid">
@@ -69,7 +80,6 @@ const DonationPage = ({ financialData, setFinancialData }) => {
                             />
                         </div>
 
-                        {/* Payment Selection */}
                         <div className="form-group">
                             <label className="section-label">Payment Method</label>
                             <div className="payment-grid">
@@ -85,7 +95,6 @@ const DonationPage = ({ financialData, setFinancialData }) => {
                             </div>
                         </div>
 
-                        {/* Donor Details */}
                         <div className="form-group">
                             <label className="section-label">Donor Information</label>
                             <div className="input-stack">
