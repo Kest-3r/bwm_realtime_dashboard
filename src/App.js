@@ -88,7 +88,7 @@ function App() {
                 <Route path="/library-archive" element={<LibraryArchive items={libraryItems} />} />
                 <Route path="/library-archive/:id" element={<LibraryItemDetail items={libraryItems} />} />
                 <Route path="/donate" element={<DonationPage financialData={financialData} />} />
-                <Route path="/membership-registration" element={<MembershipRegistration />} />
+                <Route path="/membership-registration" element={<MembershipRegistration membershipCount={membershipCount} />} />
                 <Route path="/event-registration/:id" element={<EventRegistration />} />
                 <Route path="/admin" element={
                     <AdminPanel
